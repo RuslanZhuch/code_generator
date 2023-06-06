@@ -171,8 +171,12 @@ class CppVariable(CppLanguageElement):
         else:
             if self.documentation:
                 cpp(dedent(self.documentation))
-            cpp(f'{self._render_static()}{self._render_const()}{self._render_constexpr()}'
-                f'{self.type} {self.assignment(self._render_init_value())};')
+            if self.initialization_value:
+                cpp(f'{self._render_static()}{self._render_const()}{self._render_constexpr()}'
+                    f'{self.type} {self.assignment(self._render_init_value())};')
+            else:
+                cpp(f'{self._render_static()}{self._render_const()}{self._render_constexpr()}'
+                    f'{self.type} {self.name};')
 
     def render_to_string_declaration(self, cpp):
         """
