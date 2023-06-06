@@ -1,12 +1,13 @@
-from code_generation import code_generator
-from code_generation import cpp_generator
+from code_generation.core import code_generator
+from code_generation.cpp import cpp_generator
+from code_generation.cpp import cpp_variable
 
 # Create a new code file
 cpp = code_generator.CodeFile('example.cpp')
 cpp('int i = 0;')
 
 # Create a new variable 'x'
-x_variable = cpp_generator.CppVariable(
+x_variable = cpp_variable.CppVariable(
     name='x',
     type='int const&',
     is_static=True,
@@ -15,7 +16,7 @@ x_variable = cpp_generator.CppVariable(
 x_variable.render_to_string(cpp)
 
 # Create a new variable 'name'
-name_variable = cpp_generator.CppVariable(
+name_variable = cpp_variable.CppVariable(
     name='name',
     type='char*',
     is_extern=True)
