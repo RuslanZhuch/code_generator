@@ -132,7 +132,7 @@ class CppVariable(CppLanguageElement):
         """
         @return: string, initialization_value to be initialized with
         """
-        return self.initialization_value if self.initialization_value else ''
+        return self.initialization_value if self.initialization_value is not None else ''
 
     def assignment(self, value):
         """
@@ -140,7 +140,9 @@ class CppVariable(CppLanguageElement):
         a = 10;
         b = 20;
         """
-        return f'{self.name} = {value}'
+        if value == 0:
+            return f'{self.name}{{}}'
+        return f'{self.name}{{ {value} }}'
 
     def declaration(self):
         """
@@ -171,7 +173,7 @@ class CppVariable(CppLanguageElement):
         else:
             if self.documentation:
                 cpp(dedent(self.documentation))
-            if self.initialization_value:
+            if self.initialization_value is not None:
                 cpp(f'{self._render_static()}{self._render_const()}{self._render_constexpr()}'
                     f'{self.type} {self.assignment(self._render_init_value())};')
             else:
