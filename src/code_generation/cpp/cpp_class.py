@@ -140,7 +140,8 @@ class CppClass(CppLanguageElement):
             """
             Return type, could be in declaration or definition
             """
-            return self.ret_type if self.ret_type else ''
+            nodiscard = "[[nodiscard]] " if self.ret_type and self.ret_type != "void" else ''
+            return nodiscard + self.ret_type if self.ret_type else ''
 
         def _render_pure(self):
             """
@@ -148,6 +149,12 @@ class CppClass(CppLanguageElement):
             Pure virtual functions must be virtual
             """
             return ' = 0' if self.is_pure_virtual else ''
+        
+        def _render_noexcept(self):
+            """
+            After function name
+            """
+            return ' noexcept'
 
         def _render_const(self):
             """
@@ -255,7 +262,9 @@ class CppClass(CppLanguageElement):
                            f'{self._render_const()}'
                            f'{self._render_override()}'
                            f'{self._render_final()}'
-                           f'{self._render_pure()}'):
+                           f'{self._render_pure()}'
+                           f'{self._render_noexcept()}'
+                           ):
                 self.implementation(cpp)
 
         def render_to_string_declaration(self, cpp):
@@ -277,7 +286,9 @@ class CppClass(CppLanguageElement):
                     f'{self._render_const()}'
                     f'{self._render_override()}'
                     f'{self._render_final()}'
-                    f'{self._render_pure()};')
+                    f'{self._render_pure()}'
+                    f'{self._render_noexcept()};'
+                )
 
         def render_to_string_implementation(self, cpp):
             """
@@ -327,6 +338,9 @@ class CppClass(CppLanguageElement):
 
         # class methods
         self.internal_method_elements = []
+        
+        # class methods
+        self.internal_private_method_elements = []
 
         # class enums
         self.internal_enum_elements = []
@@ -384,6 +398,14 @@ class CppClass(CppLanguageElement):
         method.is_method = True
         self.internal_method_elements.append(method)
 
+    def add_private_method(self, method):
+        """
+        @param: method CppFunction instance
+        """
+        method.ref_to_parent = self
+        method.is_method = True
+        self.internal_private_method_elements.append(method)
+
     ########################################
     # RENDER CLASS MEMBERS
     def _render_internal_classes_declaration(self, cpp):
@@ -412,7 +434,6 @@ class CppClass(CppLanguageElement):
         """
         for varItem in self.internal_variable_elements:
             varItem.declaration().render_to_string(cpp)
-            cpp.newline()
 
     def _render_array_declaration(self, cpp):
         """
@@ -431,7 +452,15 @@ class CppClass(CppLanguageElement):
         """
         for funcItem in self.internal_method_elements:
             funcItem.render_to_string_declaration(cpp)
-            cpp.newline()
+            
+    def _render_private_methods_declaration(self, cpp):
+        """
+        Generates all class methods declaration
+        Should be placed in 'public:' section
+        Method is protected as it is used by CppClass only
+        """
+        for funcItem in self.internal_private_method_elements:
+            funcItem.render_to_string_declaration(cpp)
 
     def render_static_members_implementation(self, cpp):
         """
@@ -480,6 +509,14 @@ class CppClass(CppLanguageElement):
         self._render_enum_section(cpp)
         self._render_internal_classes_declaration(cpp)
         self._render_methods_declaration(cpp)
+        
+    def class_private_interface(self, cpp):
+        """
+        Generates section that generally used as an 'closed interface'
+        Generates string representation for enums, internal classes and methods
+        Should be placed in 'private:' section
+        """
+        self._render_private_methods_declaration(cpp)
 
     def private_class_members(self, cpp):
         """
@@ -506,12 +543,17 @@ class CppClass(CppLanguageElement):
         if self.documentation:
             cpp(dedent(self.documentation))
 
-        with cpp.block(f'{self._render_class_type()} {self.name} {self.inherits()}', postfix=';'):
+        with cpp.block(f'{self._render_class_type()} {self.name}{self.inherits()}', postfix=';'):
 
             # in case of struct all members meant to be public
             if not self.is_struct:
                 cpp.label('public')
             self.class_interface(cpp)
+            cpp.newline()
+            
+            if not self.is_struct:
+                cpp.label('private')
+            self.class_private_interface(cpp)
             cpp.newline()
 
             # in case of struct all members meant to be public

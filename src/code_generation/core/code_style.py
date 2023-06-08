@@ -17,7 +17,7 @@ class ANSICodeStyle:
     endline = "\n"
  
     # Tab (indentation) symbol
-    indent = "\t"
+    indent = " "
  
     def __init__(self, owner, text, postfix):
         """

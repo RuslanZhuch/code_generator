@@ -104,7 +104,7 @@ class CodeFile:
         """
         Write a new line with line ending
         """
-        self.out.write('{0}{1}{2}'.format(self.Formatter.indent * (self.current_indent+indent),
+        self.out.write('{0}{1}{2}'.format(self.Formatter.indent * (self.current_indent+indent) * 4,
                                           text,
                                           self.Formatter.endline if endline else ''))
  
@@ -141,7 +141,7 @@ class CodeFile:
         Insert one or several empty lines
         """
         for _ in range(n):
-            self.write('')
+            self.append('\n')
  
 
 class CppFile(CodeFile):
