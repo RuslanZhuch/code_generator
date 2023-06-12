@@ -314,7 +314,9 @@ class CppClass(CppLanguageElement):
                            f'{self._render_const()}'
                            f'{self._render_override()}'
                            f'{self._render_final()}'
-                           f'{self._render_pure()}'):
+                           f'{self._render_pure()}'
+                           f'{self._render_noexcept()}'
+                           ):
                 self.implementation(cpp)
 
     def __init__(self, **properties):
@@ -497,6 +499,18 @@ class CppClass(CppLanguageElement):
         for classItem in self.internal_class_elements:
             classItem.render_static_members_implementation(cpp)
             cpp.newline()
+            
+    def render_private_methods_implementation(self, cpp):
+        """
+        Generates all class methods declaration
+        Should be placed in 'private:' section
+        Method is private, as it could be used for nested classes
+        """
+        # generate methods implementation section
+        for funcItem in self.internal_private_method_elements:
+            if not funcItem.is_pure_virtual:
+                funcItem.render_to_string_implementation(cpp)
+                cpp.newline()
 
     ########################################
     # GROUP GENERATED SECTIONS
@@ -572,9 +586,9 @@ class CppClass(CppLanguageElement):
         Render to string class definition.
         Typically handle to *.cpp file should be passed as 'cpp' param
         """
-        cpp.newline(2)
         self.render_static_members_implementation(cpp)
         self.render_methods_implementation(cpp)
+        self.render_private_methods_implementation(cpp)
 
     def declaration(self):
         """
