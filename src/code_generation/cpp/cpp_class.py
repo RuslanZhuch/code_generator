@@ -572,7 +572,7 @@ class CppClass(CppLanguageElement):
 
             # in case of struct all members meant to be public
             if not self.is_struct:
-                cpp.label('private')
+                cpp.label('public')
             self.private_class_members(cpp)
 
     def _render_class_type(self):
