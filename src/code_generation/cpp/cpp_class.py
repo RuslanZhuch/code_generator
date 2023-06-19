@@ -136,12 +136,17 @@ class CppClass(CppLanguageElement):
             """
             return 'inline ' if self.is_inline else ''
 
+        def _render_nodiscard(self):
+            """
+            Nodiscard attribute
+            """
+            return "[[nodiscard]] " if self.ret_type and self.ret_type != "void" else ''
+
         def _render_ret_type(self):
             """
             Return type, could be in declaration or definition
             """
-            nodiscard = "[[nodiscard]] " if self.ret_type and self.ret_type != "void" else ''
-            return nodiscard + self.ret_type if self.ret_type else ''
+            return self.ret_type if self.ret_type else ''
 
         def _render_pure(self):
             """
@@ -257,7 +262,8 @@ class CppClass(CppLanguageElement):
             self._sanity_check()
             if self.documentation:
                 cpp(dedent(self.documentation))
-            with cpp.block(f'{self._render_static()}{self._render_virtual()}{self._render_constexpr()}{self._render_inline()}'
+            with cpp.block(f'{self._render_nodiscard()}'
+                           f'{self._render_static()}{self._render_virtual()}{self._render_constexpr()}{self._render_inline()}'
                            f'{self._render_ret_type()} {self.fully_qualified_name()}({self.args()})'
                            f'{self._render_const()}'
                            f'{self._render_override()}'
@@ -281,7 +287,8 @@ class CppClass(CppLanguageElement):
                     cpp(dedent(self.documentation))
                 self.render_to_string(cpp)
             else:
-                cpp(f'{self._render_static()}{self._render_virtual()}{self._render_inline()}'
+                cpp(f'{self._render_nodiscard()}'
+                    f'{self._render_static()}{self._render_virtual()}{self._render_inline()}'
                     f'{self._render_ret_type()} {self.name}({self.args()})'
                     f'{self._render_const()}'
                     f'{self._render_override()}'
@@ -309,7 +316,8 @@ class CppClass(CppLanguageElement):
 
             if self.documentation and not self.is_constexpr:
                 cpp(dedent(self.documentation))
-            with cpp.block(f'{self._render_virtual()}{self._render_constexpr()}{self._render_inline()}'
+            with cpp.block(f'{self._render_nodiscard()}'
+                           f'{self._render_virtual()}{self._render_constexpr()}{self._render_inline()}'
                            f'{self._render_ret_type()} {self.fully_qualified_name()}({self.args()})'
                            f'{self._render_const()}'
                            f'{self._render_override()}'
@@ -567,8 +575,8 @@ class CppClass(CppLanguageElement):
             
             if not self.is_struct:
                 cpp.label('private')
-            self.class_private_interface(cpp)
-            cpp.newline()
+                self.class_private_interface(cpp)
+                cpp.newline()
 
             # in case of struct all members meant to be public
             if not self.is_struct:
