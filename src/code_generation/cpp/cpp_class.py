@@ -501,12 +501,12 @@ class CppClass(CppLanguageElement):
         # generate methods implementation section
         for funcItem in self.internal_method_elements:
             if not funcItem.is_pure_virtual:
-                funcItem.render_to_string_implementation(cpp)
                 cpp.newline()
+                funcItem.render_to_string_implementation(cpp)
         # do the same for nested classes
         for classItem in self.internal_class_elements:
-            classItem.render_static_members_implementation(cpp)
             cpp.newline()
+            classItem.render_static_members_implementation(cpp)
             
     def render_private_methods_implementation(self, cpp):
         """
@@ -517,8 +517,8 @@ class CppClass(CppLanguageElement):
         # generate methods implementation section
         for funcItem in self.internal_private_method_elements:
             if not funcItem.is_pure_virtual:
-                funcItem.render_to_string_implementation(cpp)
                 cpp.newline()
+                funcItem.render_to_string_implementation(cpp)
 
     ########################################
     # GROUP GENERATED SECTIONS
